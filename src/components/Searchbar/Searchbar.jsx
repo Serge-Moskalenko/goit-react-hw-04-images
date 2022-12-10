@@ -8,7 +8,7 @@ let schema = yup.object().shape({
 });
 
 
-export const Searchbar = qeury => {
+export const Searchbar = ( qeury ) => {
     
     console.log(qeury)
     const handleSubmit = (value, { resetForm }) => {
