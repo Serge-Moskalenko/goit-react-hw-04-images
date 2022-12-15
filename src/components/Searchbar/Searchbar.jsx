@@ -1,6 +1,6 @@
-import { HeaderStyled, Input, Error, Button} from "./Searchbar.styled";
-import { Formik, Form, ErrorMessage } from "formik";
-import {ImSearch} from 'react-icons/im'
+import { HeaderStyled, Input, Error, Button, FormStyled,} from "./Searchbar.styled";
+import { Formik, ErrorMessage } from "formik";
+import { ImSearch } from 'react-icons/im';
 import * as yup from 'yup';
 
 let schema = yup.object().shape({
@@ -8,21 +8,26 @@ let schema = yup.object().shape({
 });
 
 
-export const Searchbar = ( qeury ) => {
+
+export const Searchbar = ( {query} ) => {
     
-    console.log(qeury)
     const handleSubmit = (value, { resetForm }) => {
-       
-    qeury(value)
-    resetForm()
-    }
-   
+        const { searchInput } = value;
+
+        if (searchInput.trim() === '') {
+            alert('Заполните поле поиска')
+            return;
+        }
+        query(searchInput)
+        resetForm()
+    };
+
     return (
         <HeaderStyled >
             <Formik initialValues={{ searchInput:''}} validationSchema={schema} onSubmit={handleSubmit}  >
-                <Form >
+                <FormStyled>
                     <Button type="submit"  >
-                        <ImSearch/>
+                        <ImSearch />
                     </Button>
 
                     <Input
@@ -33,7 +38,7 @@ export const Searchbar = ( qeury ) => {
                         name="searchInput"
                     />
                     <ErrorMessage component={Error} name="searchInput" />
-                </Form>
+                </FormStyled>
             </Formik>
         </HeaderStyled>
     )
