@@ -57,9 +57,12 @@ export class App extends Component {
   }
 
   queryParameter = q => {
-    this.setState({ request: q })
-   
+    this.setState(({request}) => {
+      if (request !== q)
+        return { request: q, page: 1, images: [] };
+    });
   }
+
   onModal = e => {
 
     const largeImg = this.state.images.filter(
