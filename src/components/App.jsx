@@ -1,4 +1,4 @@
-import React,{Component} from "react";
+import {useState,useEffect} from "react";
 import { AppStyled } from "./App.styled";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Searchbar } from "./Searchbar/Searchbar";
@@ -8,98 +8,71 @@ import { ButtonComponent } from "./Button/Button";
 import { Error } from "./Error/Error";
 import { Modal } from "./Modal/Modal";
 
-
-
 const apiServise = new ApiServise();
 
-export class App extends Component {
+export function App() {
+  const [request, setRequest] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [moduleImage, setModalImg] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [isAll, setIsAll] = useState(false);
 
-  state = {
-    images: [],
-    moduleImage:null,
-    request:'',
-    loading: false,
-    page: 1,
-    error:false
-  }
+  useEffect(() => {
+    async function onRequest() {
+      if (request)
+        try {
+          setLoading(true);
+          setError(false);
+          setIsAll(false);
+          const newImages = await apiServise.fetch(request, page);
 
+          if (newImages[0].length < 1) setIsAll(true);
 
-  async componentDidUpdate(_, prevStat) {
-    const { request, page } = this.state;
-    
-    if (prevStat.request !== request || prevStat.page !== page) {
-      try {
-
-        this.setState({ loading: true, error: false, isAll: false });
-        const newImages = await apiServise.fetch(this.state.request, page);
-   
-
-        this.setState(prevState => {
-          return {
-            images: prevState.images.concat(newImages[0]),
-          };
-        });
-      } catch (error) {
-        this.setState({ error});
-      } finally {
-        this.setState({ loading: false });
-      }
+          setImages(s => [...s, ...newImages[0]]);
+        } catch (error) {
+          setError(true);
+        } finally {
+          setLoading(false);
+        }
     }
-  }
 
-  hendlerClick = () => {
-  
-    this.setState(prevState => {
-    
-    return { page: prevState.page + 1 }
-   });
-    
-  }
+    onRequest();
+  }, [request, page]);
 
-  queryParameter = q => {
-    this.setState(({request}) => {
-      if (request !== q)
-        return { request: q, page: 1, images: [] };
-    });
-  }
-
-  onModal = e => {
-
-    const largeImg = this.state.images.filter(
-      item => item.id === Number(e.target.closest('li').id)
-    );
-
-    this.setState({
-      moduleImage: largeImg[0].largeImageURL,
-    });
-
-  }
-
-  closeModal = () => {
-    this.setState({ moduleImage: null });
+  const queryParameter = q => {
+     
+    if (request !== q) {
+      setRequest(q);
+      setPage(1);
+      setImages([]);
+    }
   };
 
-  render() {
-    const { images, loading, error ,moduleImage} = this.state;
+  const onModal = e => {
+    console.log(e.target)
 
-    return (<>
-      
-      <AppStyled>
-        <Searchbar query={this.queryParameter} />
-        {moduleImage && (<Modal img={moduleImage} closeModal={this.closeModal}> {<img src={moduleImage} alt=''/>} </Modal>)}
+    const largeImg = images.filter(item => item.id === Number(e.target.closest('li').id));
+    setModalImg(largeImg[0].largeImageURL);
+  };
 
-        {loading && <Audio />}
-        {error && <Error message={ error.message} />}
+  return (<>
+    
+    <AppStyled>
+      <Searchbar query={queryParameter} />
+      {moduleImage && (<Modal img={moduleImage} closeModal={() => { setModalImg(null) }}> {<img src={moduleImage} alt='' />} </Modal>)}
+
+      {loading && <Audio />}
+      {error  && <Error message='Error' />}
+      {isAll && <Error message="The End!" />}
         
-        {images.length > 0 && (
-          <ImageGallery data={images} onClick={this.onModal} />
-        )}
-        {images.length > 0 && <ButtonComponent click={ this.hendlerClick} />}
+      {images.length > 0 && (
+        <ImageGallery data={images} onClick={onModal} />
+      )}
+      {images.length > 0 && !loading && !error && !isAll && <ButtonComponent click={() => { setPage(s => s + 1) }} />}
         
-      </AppStyled>
+    </AppStyled>
       
-      </>
-  );
-  }
-  
+  </>);
 };
