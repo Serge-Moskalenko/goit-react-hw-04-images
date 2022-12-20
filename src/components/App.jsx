@@ -6,7 +6,7 @@ import {  ApiServise } from "./ApiServise";
 import { Audio } from 'react-loader-spinner';
 import { ButtonComponent } from "./Button/Button";
 import { Error } from "./Error/Error";
-import { Modal } from "./Modal/Modal";
+import { Modals } from "./Modal/Modal";
 
 const apiServise = new ApiServise();
 
@@ -61,7 +61,7 @@ export function App() {
     
     <AppStyled>
       <Searchbar query={queryParameter} />
-      {moduleImage && (<Modal img={moduleImage} closeModal={() => { setModalImg(null) }}> {<img src={moduleImage} alt='' />} </Modal>)}
+      {moduleImage && (<Modals img={moduleImage} closeModal={() => { setModalImg(null) }}> {<img src={moduleImage} alt='' />} </Modals>)}
 
       {loading && <Audio />}
       {error  && <Error message='Error' />}
